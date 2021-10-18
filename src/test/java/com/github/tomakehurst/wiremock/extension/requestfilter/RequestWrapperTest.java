@@ -47,14 +47,9 @@ public class RequestWrapperTest {
         MockRequest request = mockRequest().url("/original-path?one=1&two=2");
 
         Request wrappedRequest = RequestWrapper.create()
-                .transformAbsoluteUrl(new FieldTransformer<String>() {
-                    @Override
-                    public String transform(String existingUrl) {
-                        return existingUrl
-                                .replace("my.domain", "wiremock.org")
-                                .replace("/original-path", "/new-path");
-                    }
-                })
+                .transformAbsoluteUrl(existingUrl -> existingUrl
+                        .replace("my.domain", "wiremock.org")
+                        .replace("/original-path", "/new-path"))
                 .wrap(request);
 
         assertThat(wrappedRequest.getUrl(), is("/new-path?one=1&two=2"));
@@ -66,13 +61,8 @@ public class RequestWrapperTest {
         MockRequest request = mockRequest().url("");
 
         Request wrappedRequest = RequestWrapper.create()
-                .transformAbsoluteUrl(new FieldTransformer<String>() {
-                    @Override
-                    public String transform(String existingUrl) {
-                        return existingUrl
-                                .replace("my.domain", "wiremock.org");
-                    }
-                })
+                .transformAbsoluteUrl(existingUrl -> existingUrl
+                        .replace("my.domain", "wiremock.org"))
                 .wrap(request);
 
         assertThat(wrappedRequest.getUrl(), is(""));
@@ -109,28 +99,8 @@ public class RequestWrapperTest {
                 .header("Two", "2", "3");
 
         Request wrappedRequest = RequestWrapper.create()
-                .transformHeader("One", new FieldTransformer<List<String>>() {
-                    @Override
-                    public List<String> transform(List<String> headerValues) {
-                        return FluentIterable.from(headerValues).transform(new Function<String, String>() {
-                            @Override
-                            public String apply(String headerValue) {
-                                return headerValue + "1";
-                            }
-                        }).toList();
-                    }
-                })
-                .transformHeader("two", new FieldTransformer<List<String>>() {
-                    @Override
-                    public List<String> transform(List<String> headerValues) {
-                        return FluentIterable.from(headerValues).transform(new Function<String, String>() {
-                            @Override
-                            public String apply(String headerValue) {
-                                return headerValue + "2";
-                            }
-                        }).toList();
-                    }
-                })
+                .transformHeader("One", headerValues -> FluentIterable.from(headerValues).transform(headerValue -> headerValue + "1").toList())
+                .transformHeader("two", headerValues -> FluentIterable.from(headerValues).transform(headerValue -> headerValue + "2").toList())
                 .wrap(request);
 
         assertThat(wrappedRequest.getHeader("One"), is("11"));
@@ -175,12 +145,7 @@ public class RequestWrapperTest {
                 .cookie("One", "1");
 
         Request wrappedRequest = RequestWrapper.create()
-                .transformCookie("One", new FieldTransformer<Cookie>() {
-                    @Override
-                    public Cookie transform(Cookie cookie) {
-                        return new Cookie(cookie.firstValue() + "1");
-                    }
-                })
+                .transformCookie("One", cookie -> new Cookie(cookie.firstValue() + "1"))
                 .wrap(request);
 
         assertThat(wrappedRequest.getCookies().get("One").firstValue(), is("11"));
@@ -191,13 +156,10 @@ public class RequestWrapperTest {
         MockRequest request = mockRequest().body("One");
 
         Request wrappedRequest = RequestWrapper.create()
-                .transformBody(new FieldTransformer<Body>() {
-                    @Override
-                    public Body transform(Body existingBody) {
-                        String newValue = existingBody.asString().replace("One", "Two");
-                        return new Body(newValue);
+                .transformBody(existingBody -> {
+                    String newValue = existingBody.asString().replace("One", "Two");
+                    return new Body(newValue);
 
-                    }
                 })
                 .wrap(request);
 
@@ -213,13 +175,7 @@ public class RequestWrapperTest {
         MockRequest request = mockRequest().body(initialBytes);
 
         Request wrappedRequest = RequestWrapper.create()
-                .transformBody(new FieldTransformer<Body>() {
-                    @Override
-                    public Body transform(Body existingBody) {
-                        return new Body(finalBytes);
-
-                    }
-                })
+                .transformBody(existingBody -> new Body(finalBytes))
                 .wrap(request);
 
         assertThat(wrappedRequest.getBody(), is(finalBytes));
@@ -233,15 +189,9 @@ public class RequestWrapperTest {
                 .part(mockPart().name("two").body("2"));
 
         Request wrappedRequest = RequestWrapper.create()
-                .transformParts(new FieldTransformer<Request.Part>() {
-                    @Override
-                    public Request.Part transform(Request.Part existingPart) {
-                        return existingPart.getName().equals("one") ?
-                                mockPart().name("one").body("1111") :
-                                mockPart().name("two").body("2222");
-
-                    }
-                })
+                .transformParts(existingPart -> existingPart.getName().equals("one") ?
+                        mockPart().name("one").body("1111") :
+                        mockPart().name("two").body("2222"))
                 .wrap(request);
 
         assertThat(wrappedRequest.getPart("one").getBody().asString(), is("1111"));

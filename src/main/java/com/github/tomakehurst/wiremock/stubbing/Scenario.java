@@ -68,20 +68,10 @@ public class Scenario {
 
     public Set<String> getPossibleStates() {
         FluentIterable<String> requiredStates = from(stubMappings)
-            .transform(new Function<StubMapping, String>() {
-                @Override
-                public String apply(StubMapping mapping) {
-                    return mapping.getRequiredScenarioState();
-                }
-            });
+            .transform(mapping -> mapping.getRequiredScenarioState());
 
         return from(stubMappings)
-            .transform(new Function<StubMapping, String>() {
-                @Override
-                public String apply(StubMapping mapping) {
-                    return mapping.getNewScenarioState();
-                }
-            })
+            .transform(mapping -> mapping.getNewScenarioState())
             .append(requiredStates)
             .filter(Predicates.notNull())
             .toSet();
@@ -135,11 +125,6 @@ public class Scenario {
     }
 
     public static final Predicate<Scenario> withName(final String name) {
-	    return new Predicate<Scenario>() {
-            @Override
-            public boolean apply(Scenario input) {
-                return input.getName().equals(name);
-            }
-        };
+	    return input -> input.getName().equals(name);
     }
 }

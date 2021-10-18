@@ -108,12 +108,7 @@ public class StringValuePatternJsonDeserializer extends JsonDeserializer<StringV
     }
 
     private static Map.Entry<String, JsonNode> findMainFieldEntry(JsonNode rootNode) {
-        return find(rootNode.fields(), new Predicate<Map.Entry<String, JsonNode>>() {
-            @Override
-            public boolean apply(Map.Entry<String, JsonNode> input) {
-                return PATTERNS.keySet().contains(input.getKey());
-            }
-        });
+        return find(rootNode.fields(), input -> PATTERNS.keySet().contains(input.getKey()));
     }
 
     private EqualToPattern deserializeEqualTo(JsonNode rootNode) throws JsonMappingException {
@@ -318,13 +313,8 @@ public class StringValuePatternJsonDeserializer extends JsonDeserializer<StringV
     @SuppressWarnings("unchecked")
     private static Constructor<? extends StringValuePattern> findConstructor(Class<? extends StringValuePattern> clazz) {
         Optional<Constructor<?>> optionalConstructor =
-            tryFind(asList(clazz.getDeclaredConstructors()), new Predicate<Constructor<?>>() {
-                @Override
-                public boolean apply(Constructor<?> input) {
-                    return input.getParameterTypes().length == 1 &&
-                        input.getGenericParameterTypes()[0].equals(String.class);
-                }
-            });
+            tryFind(asList(clazz.getDeclaredConstructors()), input -> input.getParameterTypes().length == 1 &&
+                input.getGenericParameterTypes()[0].equals(String.class));
 
         if (!optionalConstructor.isPresent()) {
             throw new IllegalStateException("Constructor for " + clazz.getSimpleName() + " must have a single string argument constructor");

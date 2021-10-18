@@ -106,12 +106,7 @@ public class SavingMappingsAcceptanceTest extends AcceptanceTestBase {
         return new TypeSafeDiagnosingMatcher<File>() {
             @Override
             protected boolean matchesSafely(File directory, Description mismatchDescription) {
-                boolean found = FluentIterable.from(directory.list()).filter(new Predicate<String>() {
-                    @Override
-                    public boolean apply(String filename) {
-                        return filename.contains(namePart);
-                    }
-                })
+                boolean found = FluentIterable.from(directory.list()).filter(filename -> filename.contains(namePart))
                 .first()
                 .isPresent();
 

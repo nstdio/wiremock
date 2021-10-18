@@ -285,11 +285,6 @@ public class LoggedRequest implements Request {
     @JsonIgnore
     @Override
     public Part getPart(final String name) {
-        return (multiparts != null && name != null) ? from(multiparts).firstMatch(new Predicate<Part>() {
-            @Override
-            public boolean apply(Part input) {
-                return (name.equals(input.getName()));
-            }
-        }).get() : null;
+        return (multiparts != null && name != null) ? from(multiparts).firstMatch(input -> (name.equals(input.getName()))).get() : null;
     }
 }

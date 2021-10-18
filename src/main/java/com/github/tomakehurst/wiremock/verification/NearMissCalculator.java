@@ -32,11 +32,7 @@ public class NearMissCalculator {
 
     public static final int NEAR_MISS_COUNT = 3;
 
-    public static final Comparator<NearMiss> NEAR_MISS_ASCENDING_COMPARATOR = new Comparator<NearMiss>() {
-        public int compare(NearMiss o1, NearMiss o2) {
-            return o1.compareTo(o2);
-        }
-    };
+    public static final Comparator<NearMiss> NEAR_MISS_ASCENDING_COMPARATOR = (o1, o2) -> o1.compareTo(o2);
 
     private final StubMappings stubMappings;
     private final RequestJournal requestJournal;
@@ -51,12 +47,10 @@ public class NearMissCalculator {
     public List<NearMiss> findNearestTo(final LoggedRequest request) {
         List<StubMapping> allMappings = stubMappings.getAll();
 
-        return sortAndTruncate(from(allMappings).transform(new Function<StubMapping, NearMiss>() {
-            public NearMiss apply(StubMapping stubMapping) {
-                MatchResult matchResult = new MemoizingMatchResult(stubMapping.getRequest().match(request));
-                String actualScenarioState = getScenarioStateOrNull(stubMapping);
-                return new NearMiss(request, stubMapping, matchResult, actualScenarioState);
-            }
+        return sortAndTruncate(from(allMappings).transform(stubMapping -> {
+            MatchResult matchResult = new MemoizingMatchResult(stubMapping.getRequest().match(request));
+            String actualScenarioState = getScenarioStateOrNull(stubMapping);
+            return new NearMiss(request, stubMapping, matchResult, actualScenarioState);
         }), allMappings.size());
     }
 
@@ -71,11 +65,9 @@ public class NearMissCalculator {
 
     public List<NearMiss> findNearestTo(final RequestPattern requestPattern) {
         List<ServeEvent> serveEvents = requestJournal.getAllServeEvents();
-        return sortAndTruncate(from(serveEvents).transform(new Function<ServeEvent, NearMiss>() {
-            public NearMiss apply(ServeEvent serveEvent) {
-                MatchResult matchResult = new MemoizingMatchResult(requestPattern.match(serveEvent.getRequest()));
-                return new NearMiss(serveEvent.getRequest(), requestPattern, matchResult);
-            }
+        return sortAndTruncate(from(serveEvents).transform(serveEvent -> {
+            MatchResult matchResult = new MemoizingMatchResult(requestPattern.match(serveEvent.getRequest()));
+            return new NearMiss(serveEvent.getRequest(), requestPattern, matchResult);
         }), serveEvents.size());
     }
 

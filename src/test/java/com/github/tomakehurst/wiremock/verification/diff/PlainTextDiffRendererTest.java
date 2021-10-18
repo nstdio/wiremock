@@ -366,12 +366,7 @@ public class PlainTextDiffRendererTest {
     public void showsErrorInDiffWhenInlineCustomMatcherNotSatisfiedInMixedStub() {
         Diff diff = new Diff(post("/thing")
                 .withName("Standard and custom matched stub")
-                .andMatching(new ValueMatcher<Request>() {
-                    @Override
-                    public MatchResult match(Request value) {
-                        return MatchResult.noMatch();
-                    }
-                })
+                .andMatching(value -> MatchResult.noMatch())
                 .build(),
 
                 mockRequest()
@@ -403,12 +398,7 @@ public class PlainTextDiffRendererTest {
 
     @Test
     public void showsAppropriateErrorInDiffWhenCustomMatcherIsUsedExclusively() {
-        Diff diff = new Diff(requestMatching(new ValueMatcher<Request>() {
-                    @Override
-                    public MatchResult match(Request value) {
-                        return MatchResult.noMatch();
-                    }
-                })
+        Diff diff = new Diff(requestMatching(value -> MatchResult.noMatch())
                 .build(),
 
                 mockRequest()

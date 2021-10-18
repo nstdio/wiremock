@@ -258,12 +258,7 @@ public class RecordApiAcceptanceTest extends AcceptanceTestBase {
     }
 
     private ServeEvent findServeEventWithRequestUrl(final String url) {
-        return find(proxyingService.getAllServeEvents(), new Predicate<ServeEvent>() {
-            @Override
-            public boolean apply(ServeEvent input) {
-                return url.equals(input.getRequest().getUrl());
-            }
-        });
+        return find(proxyingService.getAllServeEvents(), input -> url.equals(input.getRequest().getUrl()));
     }
 
     private static final String CAPTURE_HEADERS_SNAPSHOT_REQUEST =

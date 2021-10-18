@@ -35,16 +35,14 @@ public class SortedConcurrentMappingSet implements Iterable<StubMapping> {
 	}
 	
 	private Comparator<StubMapping> sortedByPriorityThenReverseInsertionOrder() {
-		return new Comparator<StubMapping>() {
-			public int compare(StubMapping one, StubMapping two) {
-				int priorityComparison = one.comparePriorityWith(two);
-				if (priorityComparison != 0) {
-					return priorityComparison;
-				}
+		return (one, two) -> {
+            int priorityComparison = one.comparePriorityWith(two);
+            if (priorityComparison != 0) {
+                return priorityComparison;
+            }
 
-				return Long.compare(two.getInsertionIndex(), one.getInsertionIndex());
-			}
-		};
+            return Long.compare(two.getInsertionIndex(), one.getInsertionIndex());
+        };
 	}
 
 	@Override
@@ -58,21 +56,11 @@ public class SortedConcurrentMappingSet implements Iterable<StubMapping> {
 	}
 
 	public boolean remove(final StubMapping mappingToRemove) {
-		boolean removedByUuid = removeIf(mappingSet, new Predicate<StubMapping>() {
-            @Override
-            public boolean apply(StubMapping mapping) {
-                return mappingToRemove.getUuid() != null &&
-                    mapping.getUuid() != null &&
-                    mappingToRemove.getUuid().equals(mapping.getUuid());
-            }
-        });
+		boolean removedByUuid = removeIf(mappingSet, mapping -> mappingToRemove.getUuid() != null &&
+            mapping.getUuid() != null &&
+            mappingToRemove.getUuid().equals(mapping.getUuid()));
 
-        boolean removedByRequestPattern = !removedByUuid && removeIf(mappingSet, new Predicate<StubMapping>() {
-            @Override
-            public boolean apply(StubMapping mapping) {
-                return mappingToRemove.getRequest().equals(mapping.getRequest());
-            }
-        });
+        boolean removedByRequestPattern = !removedByUuid && removeIf(mappingSet, mapping -> mappingToRemove.getRequest().equals(mapping.getRequest()));
 
         return removedByUuid || removedByRequestPattern;
 	}

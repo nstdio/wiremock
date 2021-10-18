@@ -218,17 +218,14 @@ public class ResponseDelayAcceptanceTest {
 
     private AtomicBoolean callDelayedEndpointAsynchronously(ExecutorService executorService) {
         final AtomicBoolean success = new AtomicBoolean(false);
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HttpGet request = new HttpGet(String.format("http://localhost:%d/delayed", wireMockRule.port()));
-                    final HttpResponse execute = httpClient.execute(request);
-                    assertThat(execute.getStatusLine().getStatusCode(), is(200));
-                    success.set(true);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+        executorService.submit(() -> {
+            try {
+                HttpGet request = new HttpGet(String.format("http://localhost:%d/delayed", wireMockRule.port()));
+                final HttpResponse execute = httpClient.execute(request);
+                assertThat(execute.getStatusLine().getStatusCode(), is(200));
+                success.set(true);
+            } catch (Throwable e) {
+                e.printStackTrace();
             }
         });
         return success;

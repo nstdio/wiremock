@@ -93,12 +93,7 @@ public class Recorder {
     }
 
     private static Predicate<ServeEvent> withId(final UUID id) {
-        return new Predicate<ServeEvent>() {
-            @Override
-            public boolean apply(ServeEvent input) {
-                return input.getId().equals(id);
-            }
-        };
+        return input -> input.getId().equals(id);
     }
 
     public SnapshotRecordResult takeSnapshot(List<ServeEvent> serveEvents, RecordSpec recordSpec) {

@@ -44,12 +44,7 @@ public class SnapshotRecordResult {
     }
 
     public static SnapshotRecordResult idsFromMappings(List<StubMapping> stubMappings) {
-        return new Ids(Lists.transform(stubMappings, new Function<StubMapping, UUID>() {
-            @Override
-            public UUID apply(StubMapping input) {
-                return input.getId();
-            }
-        }));
+        return new Ids(Lists.transform(stubMappings, input -> input.getId()));
     }
 
     public static SnapshotRecordResult ids(List<UUID> ids) {

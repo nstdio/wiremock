@@ -623,12 +623,7 @@ public class VerificationAcceptanceTest {
             testClient.get("/remote-custom-match-this");
             testClient.get("/remote-custom-match-that");
 
-            verify(2, requestMadeFor(new ValueMatcher<Request>() {
-                @Override
-                public MatchResult match(Request value) {
-                    return MatchResult.of(value.getUrl().contains("remote-custom-match"));
-                }
-            }));
+            verify(2, requestMadeFor(value -> MatchResult.of(value.getUrl().contains("remote-custom-match"))));
         }
 
         @Test

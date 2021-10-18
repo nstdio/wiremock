@@ -70,12 +70,7 @@ public class WireMockHttpServletRequestAdapter implements Request {
         this.urlPrefixToRemove = urlPrefixToRemove;
         this.browserProxyingEnabled = browserProxyingEnabled;
 
-        cachedQueryParams = Suppliers.memoize(new Supplier<Map<String, QueryParameter>>() {
-            @Override
-            public Map<String, QueryParameter> get() {
-                return splitQuery(request.getQueryString());
-            }
-        });
+        cachedQueryParams = Suppliers.memoize(() -> splitQuery(request.getQueryString()));
     }
 
     @Override
@@ -299,12 +294,7 @@ public class WireMockHttpServletRequestAdapter implements Request {
                 return null;
             }
         }
-        return from(cachedMultiparts).firstMatch(new Predicate<Part>() {
-            @Override
-            public boolean apply(Part input) {
-                return name.equals(input.getName());
-            }
-        }).get();
+        return from(cachedMultiparts).firstMatch(input -> name.equals(input.getName())).get();
     }
 
     @Override

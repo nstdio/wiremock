@@ -203,11 +203,7 @@ public class WireMatchers {
     }
     
     private static <T> Predicate<T> isMatchFor(final Matcher<T> matcher) {
-    	return new Predicate<T>() {
-			public boolean apply(T input) {
-				return matcher.matches(input);
-			}
-		};
+    	return input -> matcher.matches(input);
     }
     
     public static Matcher<TextFile> fileNamed(final String name) {
@@ -281,17 +277,9 @@ public class WireMatchers {
             @Override
             protected boolean matchesSafely(Path path, Description mismatchDescription) {
                 List<File> files = asList(path.toFile().listFiles());
-                boolean matched = any(files, new Predicate<File>() {
-                    @Override
-                    public boolean apply(File file) {
-                        final String fileContents = fileContents(file);
-                        return all(asList(contents), new Predicate<String>() {
-                            @Override
-                            public boolean apply(String input) {
-                                return fileContents.contains(input);
-                            }
-                        });
-                    }
+                boolean matched = any(files, file -> {
+                    final String fileContents = fileContents(file);
+                    return all(asList(contents), input -> fileContents.contains(input));
                 });
 
                 if (files.size() == 0) {
@@ -300,12 +288,7 @@ public class WireMatchers {
 
                 if (!matched) {
                     String allFileContents = Joiner.on("\n\n").join(
-                        transform(files, new Function<File, String>() {
-                            @Override
-                            public String apply(File input) {
-                                return fileContents(input);
-                            }
-                        })
+                        transform(files, input -> fileContents(input))
                     );
                     mismatchDescription.appendText(allFileContents);
                 }
@@ -344,12 +327,7 @@ public class WireMatchers {
     }
 
     public static Predicate<StubMapping> withUrl(final String url) {
-        return new Predicate<StubMapping>() {
-            @Override
-            public boolean apply(StubMapping input) {
-                return url.equals(input.getRequest().getUrl());
-            }
-        };
+        return input -> url.equals(input.getRequest().getUrl());
     }
 
     public static TypeSafeDiagnosingMatcher<StubMapping> stubMappingWithUrl(final String url) {
@@ -371,12 +349,7 @@ public class WireMatchers {
     }
 
     public static ServeEvent findServeEventWithUrl(List<ServeEvent> serveEvents, final String url) {
-        return find(serveEvents, new Predicate<ServeEvent>() {
-            @Override
-            public boolean apply(ServeEvent input) {
-                return url.equals(input.getRequest().getUrl());
-            }
-        });
+        return find(serveEvents, input -> url.equals(input.getRequest().getUrl()));
     }
 
     public static StubMapping findMappingWithUrl(List<StubMapping> stubMappings, final String url) {

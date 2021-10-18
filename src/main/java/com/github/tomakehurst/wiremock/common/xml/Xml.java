@@ -67,12 +67,7 @@ public class Xml {
     }
 
     private static String setProperty(final String name, final String value) {
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
-            @Override
-            public String run() {
-                return System.setProperty(name, value);
-            }
-        });
+        return AccessController.doPrivileged((PrivilegedAction<String>) () -> System.setProperty(name, value));
     }
 
     public static String prettyPrint(String xml) {

@@ -217,12 +217,7 @@ public class RequestFilterAcceptanceTest {
         @Override
         public RequestFilterAction filter(Request request) {
             Request newRequest = RequestWrapper.create()
-                    .transformHeader("X-Modify-Me", new FieldTransformer<List<String>>() {
-                        @Override
-                        public List<String> transform(List<String> existingValue) {
-                            return Collections.singletonList(existingValue.get(0) + value);
-                        }
-                    })
+                    .transformHeader("X-Modify-Me", existingValue -> Collections.singletonList(existingValue.get(0) + value))
                     .wrap(request);
 
             return RequestFilterAction.continueWith(newRequest);
@@ -284,12 +279,7 @@ public class RequestFilterAcceptanceTest {
 
         @Override
         public RequestFilterAction filter(Request request) {
-            Request wrappedRequest = RequestWrapper.create().transformAbsoluteUrl(new FieldTransformer<String>() {
-                @Override
-                public String transform(String url) {
-                    return url.replace("/subpath", "/prefix/subpath");
-                }
-            })
+            Request wrappedRequest = RequestWrapper.create().transformAbsoluteUrl(url -> url.replace("/subpath", "/prefix/subpath"))
             .wrap(request);
 
             return RequestFilterAction.continueWith(wrappedRequest);

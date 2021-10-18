@@ -159,11 +159,7 @@ public class StubMappingJsonRecorder implements RequestListener {
     }
 
     private HttpHeaders withoutContentEncodingAndContentLength(HttpHeaders httpHeaders) {
-        return new HttpHeaders(filter(httpHeaders.all(), new Predicate<HttpHeader>() {
-            public boolean apply(HttpHeader header) {
-                return !header.keyEquals("Content-Encoding") && !header.keyEquals("Content-Length");
-            }
-        }));
+        return new HttpHeaders(filter(httpHeaders.all(), header -> !header.keyEquals("Content-Encoding") && !header.keyEquals("Content-Length")));
     }
 
     private byte[] bodyDecompressedIfRequired(Response response) {

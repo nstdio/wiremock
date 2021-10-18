@@ -159,25 +159,15 @@ public class NearMissCalculatorTest {
     }
 
     private void givenStubMappings(final MappingBuilder... mappingBuilders) {
-        final List<StubMapping> mappings = from(mappingBuilders).transform(new Function<MappingBuilder, StubMapping>() {
-            @Override
-            public StubMapping apply(MappingBuilder input) {
-                return input.build();
-            }
-        }).toList();
+        final List<StubMapping> mappings = from(mappingBuilders).transform(input -> input.build()).toList();
         when(stubMappings.getAll()).thenReturn(mappings);
     }
 
     private void givenRequests(final Request... requests) {
-        final List<ServeEvent> serveEvents = from(requests).transform(new Function<Request, ServeEvent>() {
-            @Override
-            public ServeEvent apply(Request request) {
-                return ServeEvent.of(
-                    LoggedRequest.createFrom(request),
-                    new ResponseDefinition()
-                );
-            }
-        }).toList();
+        final List<ServeEvent> serveEvents = from(requests).transform(request -> ServeEvent.of(
+            LoggedRequest.createFrom(request),
+            new ResponseDefinition()
+        )).toList();
 
         when(requestJournal.getAllServeEvents()).thenReturn(serveEvents);
     }

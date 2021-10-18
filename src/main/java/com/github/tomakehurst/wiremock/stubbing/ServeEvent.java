@@ -132,17 +132,7 @@ public class ServeEvent {
             Collections.emptyList();
     }
 
-    public static final Function<ServeEvent, LoggedRequest> TO_LOGGED_REQUEST = new Function<ServeEvent, LoggedRequest>() {
-        @Override
-        public LoggedRequest apply(ServeEvent serveEvent) {
-            return serveEvent.getRequest();
-        }
-    };
+    public static final Function<ServeEvent, LoggedRequest> TO_LOGGED_REQUEST = serveEvent -> serveEvent.getRequest();
 
-    public static final Predicate<ServeEvent> NOT_MATCHED = new Predicate<ServeEvent>() {
-        @Override
-        public boolean apply(ServeEvent serveEvent) {
-            return serveEvent.isNoExactMatch();
-        }
-    };
+    public static final Predicate<ServeEvent> NOT_MATCHED = serveEvent -> serveEvent.isNoExactMatch();
 }

@@ -61,15 +61,12 @@ public class JsonException extends InvalidInputException {
         return e;
     }
 
-    private static final Function<JsonMappingException.Reference, String> TO_NODE_NAMES = new Function<JsonMappingException.Reference, String>() {
-        @Override
-        public String apply(JsonMappingException.Reference input) {
-            if (input.getFieldName() != null) {
-                return input.getFieldName();
-            }
-
-            return String.valueOf(input.getIndex());
+    private static final Function<JsonMappingException.Reference, String> TO_NODE_NAMES = input -> {
+        if (input.getFieldName() != null) {
+            return input.getFieldName();
         }
+
+        return String.valueOf(input.getIndex());
     };
 
 }

@@ -93,12 +93,7 @@ public class JsonFileMappingsSource implements MappingsSource {
 	}
 
 	private boolean anyFilesAreMultiMapping() {
-		return any(fileNameMap.values(), new Predicate<StubMappingFileMetadata>() {
-			@Override
-			public boolean apply(StubMappingFileMetadata input) {
-				return input.multi;
-			}
-		});
+		return fileNameMap.values().stream().anyMatch(input -> input.multi);
 	}
 
 	@Override

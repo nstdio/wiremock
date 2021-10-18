@@ -48,12 +48,9 @@ public class WireMockHttpServletMultipartAdapter implements Request.Part {
 
     public WireMockHttpServletMultipartAdapter(final Part servletPart) {
         mPart = servletPart;
-        Iterable<HttpHeader> httpHeaders = FluentIterable.from(mPart.getHeaderNames()).transform(new Function<String, HttpHeader>() {
-            @Override
-            public HttpHeader apply(String name) {
-                Collection<String> headerValues = servletPart.getHeaders(name);
-                return HttpHeader.httpHeader(name, headerValues.toArray(new String[headerValues.size()]));
-            }
+        Iterable<HttpHeader> httpHeaders = FluentIterable.from(mPart.getHeaderNames()).transform(name -> {
+            Collection<String> headerValues = servletPart.getHeaders(name);
+            return HttpHeader.httpHeader(name, headerValues.toArray(new String[headerValues.size()]));
         });
 
         headers = new HttpHeaders(httpHeaders);

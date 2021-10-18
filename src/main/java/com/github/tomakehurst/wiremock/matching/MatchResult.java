@@ -51,12 +51,7 @@ public abstract class MatchResult implements Comparable<MatchResult> {
     }
 
     public static MatchResult aggregate(final List<MatchResult> matchResults) {
-        return aggregateWeighted(Lists.transform(matchResults, new Function<MatchResult, WeightedMatchResult>() {
-            @Override
-            public WeightedMatchResult apply(MatchResult matchResult) {
-                return new WeightedMatchResult(matchResult);
-            }
-        }));
+        return aggregateWeighted(Lists.transform(matchResults, matchResult -> new WeightedMatchResult(matchResult)));
     }
 
     public static MatchResult aggregateWeighted(WeightedMatchResult... matchResults) {
@@ -94,10 +89,5 @@ public abstract class MatchResult implements Comparable<MatchResult> {
         return Double.compare(other.getDistance(), getDistance());
     }
 
-    public static final Predicate<WeightedMatchResult> ARE_EXACT_MATCH = new Predicate<WeightedMatchResult>() {
-        @Override
-        public boolean apply(WeightedMatchResult matchResult) {
-            return matchResult.isExactMatch();
-        }
-    };
+    public static final Predicate<WeightedMatchResult> ARE_EXACT_MATCH = matchResult -> matchResult.isExactMatch();
 }

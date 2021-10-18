@@ -31,19 +31,9 @@ import java.util.Map;
 public class ScenarioProcessor {
 
     public void putRepeatedRequestsInScenarios(List<StubMapping> stubMappings) {
-        ImmutableListMultimap<RequestPattern, StubMapping> stubsGroupedByRequest = Multimaps.index(stubMappings, new Function<StubMapping, RequestPattern>() {
-            @Override
-            public RequestPattern apply(StubMapping mapping) {
-                return mapping.getRequest();
-            }
-        });
+        ImmutableListMultimap<RequestPattern, StubMapping> stubsGroupedByRequest = Multimaps.index(stubMappings, mapping -> mapping.getRequest());
 
-        Map<RequestPattern, Collection<StubMapping>> groupsWithMoreThanOneStub = Maps.filterEntries(stubsGroupedByRequest.asMap(), new Predicate<Map.Entry<RequestPattern, Collection<StubMapping>>>() {
-            @Override
-            public boolean apply(Map.Entry<RequestPattern, Collection<StubMapping>> input) {
-                return input.getValue().size() > 1;
-            }
-        });
+        Map<RequestPattern, Collection<StubMapping>> groupsWithMoreThanOneStub = Maps.filterEntries(stubsGroupedByRequest.asMap(), input -> input.getValue().size() > 1);
 
         int scenarioIndex = 0;
         for (Map.Entry<RequestPattern, Collection<StubMapping>> entry: groupsWithMoreThanOneStub.entrySet()) {

@@ -200,26 +200,23 @@ public class ProxyAcceptanceTest {
 
         final byte[] bytes = new byte[] {0x10, 0x49, 0x6e, (byte)0xb7, 0x46, (byte)0xe6, 0x52, (byte)0x95, (byte)0x95, 0x42};
 		HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
-		server.createContext("/binary", new HttpHandler() {
-			@Override
-			public void handle(HttpExchange exchange) throws IOException {
-				InputStream request = exchange.getRequestBody();
-				
-				byte[] buffy = new byte[10];
-				request.read(buffy);
-				
-				if (Arrays.equals(buffy, bytes)) {
-					exchange.sendResponseHeaders(200, bytes.length);
-					
-					OutputStream out = exchange.getResponseBody();
-					out.write(bytes);
-					out.close();
-				} else {
-					exchange.sendResponseHeaders(500, 0);
-					exchange.close();
-				}
-			}
-		});
+		server.createContext("/binary", exchange -> {
+            InputStream request = exchange.getRequestBody();
+
+            byte[] buffy = new byte[10];
+            request.read(buffy);
+
+            if (Arrays.equals(buffy, bytes)) {
+                exchange.sendResponseHeaders(200, bytes.length);
+
+                OutputStream out = exchange.getResponseBody();
+                out.write(bytes);
+                out.close();
+            } else {
+                exchange.sendResponseHeaders(500, 0);
+                exchange.close();
+            }
+        });
 		server.start();
 		
         proxy.register(post(urlEqualTo("/binary")).willReturn(aResponse().proxiedFrom("http://localhost:" + server.getAddress().getPort()).withBody(bytes)));

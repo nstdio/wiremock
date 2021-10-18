@@ -54,14 +54,9 @@ public abstract class StringValuePattern extends ContentPattern<String> {
 
     public final String getName() {
         Constructor<?> constructor =
-            FluentIterable.from(this.getClass().getDeclaredConstructors()).firstMatch(new Predicate<Constructor<?>>() {
-            @Override
-            public boolean apply(Constructor<?> input) {
-                return (input.getParameterAnnotations().length > 0 &&
-                        input.getParameterAnnotations()[0].length > 0 &&
-                        input.getParameterAnnotations()[0][0] instanceof JsonProperty);
-            }
-        }).orNull();
+            FluentIterable.from(this.getClass().getDeclaredConstructors()).firstMatch(input -> (input.getParameterAnnotations().length > 0 &&
+                    input.getParameterAnnotations()[0].length > 0 &&
+                    input.getParameterAnnotations()[0][0] instanceof JsonProperty)).orNull();
 
         if (constructor == null) {
             throw new IllegalStateException("Constructor must have a first parameter annotated with JsonProperty(\"<operator name>\")");

@@ -158,23 +158,15 @@ public class RequestWrapper implements Request {
 
         List<HttpHeader> combinedHeaders = from(existingHeaders)
                 .append(addedHeaders)
-                .filter(new Predicate<HttpHeader>() {
-                    @Override
-                    public boolean apply(HttpHeader httpHeader) {
-                        return !removedHeaders.contains(httpHeader.key());
+                .filter(httpHeader -> !removedHeaders.contains(httpHeader.key()))
+                .transform(httpHeader -> {
+                    if (headerTransformers.containsKey(httpHeader.caseInsensitiveKey())) {
+                        FieldTransformer<List<String>> transformer = headerTransformers.get(httpHeader.caseInsensitiveKey());
+                        List<String> newValues = transformer.transform(httpHeader.values());
+                        return new HttpHeader(httpHeader.key(), newValues);
                     }
-                })
-                .transform(new Function<HttpHeader, HttpHeader>() {
-                    @Override
-                    public HttpHeader apply(HttpHeader httpHeader) {
-                        if (headerTransformers.containsKey(httpHeader.caseInsensitiveKey())) {
-                            FieldTransformer<List<String>> transformer = headerTransformers.get(httpHeader.caseInsensitiveKey());
-                            List<String> newValues = transformer.transform(httpHeader.values());
-                            return new HttpHeader(httpHeader.key(), newValues);
-                        }
 
-                        return httpHeader;
-                    }
+                    return httpHeader;
                 })
                 .toList();
         return new HttpHeaders(combinedHeaders);
@@ -248,12 +240,7 @@ public class RequestWrapper implements Request {
         }
 
         return from(delegate.getParts())
-                .transform(new Function<Part, Part>() {
-                    @Override
-                    public Part apply(Part part) {
-                        return multipartTransformer.transform(part);
-                    }
-                })
+                .transform(part -> multipartTransformer.transform(part))
                 .toList();
     }
 

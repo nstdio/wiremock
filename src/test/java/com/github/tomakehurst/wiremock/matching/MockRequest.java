@@ -159,11 +159,7 @@ public class MockRequest implements Request {
 
     @Override
     public HttpHeader header(final String key) {
-        return tryFind(headers.all(), new Predicate<HttpHeader>() {
-            public boolean apply(HttpHeader input) {
-                return input.keyEquals(key);
-            }
-        }).or(HttpHeader.absent(key));
+        return tryFind(headers.all(), input -> input.keyEquals(key)).or(HttpHeader.absent(key));
     }
 
     @Override
@@ -238,14 +234,11 @@ public class MockRequest implements Request {
 
     @Override
     public Part getPart(final String name) {
-        return (getParts() != null && name != null) ? from(multiparts).firstMatch(new Predicate<Part>() {
-            @Override
-            public boolean apply(Part input) {
-                if (name.equals(input.getName())) {
-                    return true;
-                }
-                return false;
+        return (getParts() != null && name != null) ? from(multiparts).firstMatch(input -> {
+            if (name.equals(input.getName())) {
+                return true;
             }
+            return false;
         }).get() : null;
     }
 

@@ -93,12 +93,7 @@ public class MultipartValuePattern implements ValueMatcher<Request.Part> {
     }
 
     private MatchResult matchAllMultiparts(final Request request) {
-        return from(request.getParts()).allMatch(new Predicate<Request.Part>() {
-            @Override
-            public boolean apply(Request.Part input) {
-                return MultipartValuePattern.this.match(input).isExactMatch();
-            }
-        }) ? MatchResult.exactMatch() : MatchResult.noMatch();
+        return from(request.getParts()).allMatch(input -> MultipartValuePattern.this.match(input).isExactMatch()) ? MatchResult.exactMatch() : MatchResult.noMatch();
     }
 
     private MatchResult matchAnyMultipart(final Request request) {
@@ -107,12 +102,7 @@ public class MultipartValuePattern implements ValueMatcher<Request.Part> {
             return MatchResult.noMatch();
         }
 
-        return from(parts).anyMatch(new Predicate<Request.Part>() {
-            @Override
-            public boolean apply(Request.Part input) {
-                return MultipartValuePattern.this.match(input).isExactMatch();
-            }
-        }) ? MatchResult.exactMatch() : MatchResult.noMatch();
+        return from(parts).anyMatch(input -> MultipartValuePattern.this.match(input).isExactMatch()) ? MatchResult.exactMatch() : MatchResult.noMatch();
     }
 
     public String getName() {
@@ -137,11 +127,7 @@ public class MultipartValuePattern implements ValueMatcher<Request.Part> {
         if (headers != null && !headers.isEmpty()) {
             return MatchResult.aggregate(
                 from(headers.entrySet())
-                    .transform(new Function<Map.Entry<String, MultiValuePattern>, MatchResult>() {
-                        public MatchResult apply(Map.Entry<String, MultiValuePattern> headerPattern) {
-                            return headerPattern.getValue().match(part.getHeader(headerPattern.getKey()));
-                        }
-                    }).toList()
+                    .transform(headerPattern -> headerPattern.getValue().match(part.getHeader(headerPattern.getKey()))).toList()
             );
         }
 
@@ -150,12 +136,7 @@ public class MultipartValuePattern implements ValueMatcher<Request.Part> {
 
     private MatchResult matchBodyPatterns(final Request.Part value) {
         return MatchResult.aggregate(
-            from(bodyPatterns).transform(new Function<ContentPattern, MatchResult>() {
-                @Override
-                public MatchResult apply(ContentPattern bodyPattern) {
-                    return matchBody(value, bodyPattern);
-                }
-            }).toList()
+            from(bodyPatterns).transform((Function<ContentPattern, MatchResult>) bodyPattern -> matchBody(value, bodyPattern)).toList()
         );
     }
 

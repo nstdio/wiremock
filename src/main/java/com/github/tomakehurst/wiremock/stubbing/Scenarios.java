@@ -97,12 +97,7 @@ public class Scenarios {
     }
 
     public void reset() {
-        scenarioMap.putAll(Maps.transformValues(scenarioMap, new Function<Scenario, Scenario>() {
-            @Override
-            public Scenario apply(Scenario input) {
-                return input.reset();
-            }
-        }));
+        scenarioMap.putAll(Maps.transformValues(scenarioMap, input -> input.reset()));
     }
 
     public void clear() {

@@ -84,12 +84,7 @@ public class StubResponseRendererTest {
 
     @Test(timeout = TEST_TIMEOUT)
     public void shouldSetEndpointDistributionDelayOnResponse() throws Exception {
-        globalSettingsHolder.replaceWith(GlobalSettings.builder().delayDistribution(new DelayDistribution() {
-            @Override
-            public long sampleMillis() {
-                return 123;
-            }
-        }).build());
+        globalSettingsHolder.replaceWith(GlobalSettings.builder().delayDistribution(() -> 123).build());
 
         Response response = stubResponseRenderer.render(createServeEvent(null));
 
@@ -98,12 +93,7 @@ public class StubResponseRendererTest {
 
     @Test(timeout = TEST_TIMEOUT)
     public void shouldCombineFixedDelayDistributionDelay() throws Exception {
-        globalSettingsHolder.replaceWith(GlobalSettings.builder().delayDistribution(new DelayDistribution() {
-            @Override
-            public long sampleMillis() {
-                return 123;
-            }
-        }).build());
+        globalSettingsHolder.replaceWith(GlobalSettings.builder().delayDistribution(() -> 123).build());
         Response response = stubResponseRenderer.render(createServeEvent(2000));
         assertThat(response.getInitialDelay(), is(2123L));
     }

@@ -203,27 +203,15 @@ public class RequestPattern implements NamedValueMatcher<Request> {
         if (cookies != null && !cookies.isEmpty()) {
             return MatchResult.aggregate(
                 from(cookies.entrySet())
-                    .transform(new Function<Map.Entry<String, StringValuePattern>, MatchResult>() {
-                        public MatchResult apply(final Map.Entry<String, StringValuePattern> cookiePattern) {
-                            Cookie cookie = request.getCookies().get(cookiePattern.getKey());
-                            if (cookie == null) {
-                                return cookiePattern.getValue().nullSafeIsAbsent() ?
-                                    MatchResult.exactMatch() :
-                                    MatchResult.noMatch();
-                            }
-
-                            return from(cookie.getValues()).transform(new Function<String, MatchResult>() {
-                                @Override
-                                public MatchResult apply(String cookieValue) {
-                                    return cookiePattern.getValue().match(cookieValue);
-                                }
-                            }).toSortedList(new Comparator<MatchResult>() {
-                                @Override
-                                public int compare(MatchResult o1, MatchResult o2) {
-                                    return o2.compareTo(o1);
-                                }
-                            }).get(0);
+                    .transform(cookiePattern -> {
+                        Cookie cookie = request.getCookies().get(cookiePattern.getKey());
+                        if (cookie == null) {
+                            return cookiePattern.getValue().nullSafeIsAbsent() ?
+                                MatchResult.exactMatch() :
+                                MatchResult.noMatch();
                         }
+
+                        return from(cookie.getValues()).transform(cookieValue -> cookiePattern.getValue().match(cookieValue)).toSortedList((o1, o2) -> o2.compareTo(o1)).get(0);
                     }).toList()
             );
         }
@@ -255,11 +243,7 @@ public class RequestPattern implements NamedValueMatcher<Request> {
         if (combinedHeaders != null && !combinedHeaders.isEmpty()) {
             return MatchResult.aggregate(
                 from(combinedHeaders.entrySet())
-                    .transform(new Function<Map.Entry<String, MultiValuePattern>, MatchResult>() {
-                        public MatchResult apply(Map.Entry<String, MultiValuePattern> headerPattern) {
-                            return headerPattern.getValue().match(request.header(headerPattern.getKey()));
-                        }
-                    }).toList()
+                    .transform(headerPattern -> headerPattern.getValue().match(request.header(headerPattern.getKey()))).toList()
             );
         }
 
@@ -284,11 +268,7 @@ public class RequestPattern implements NamedValueMatcher<Request> {
         if (queryParams != null && !queryParams.isEmpty()) {
             return MatchResult.aggregate(
                 from(queryParams.entrySet())
-                    .transform(new Function<Map.Entry<String, MultiValuePattern>, MatchResult>() {
-                        public MatchResult apply(Map.Entry<String, MultiValuePattern> queryParamPattern) {
-                            return queryParamPattern.getValue().match(request.queryParameter(queryParamPattern.getKey()));
-                        }
-                    }).toList()
+                    .transform(queryParamPattern -> queryParamPattern.getValue().match(request.queryParameter(queryParamPattern.getKey()))).toList()
             );
         }
 
@@ -299,20 +279,15 @@ public class RequestPattern implements NamedValueMatcher<Request> {
     private MatchResult allBodyPatternsMatch(final Request request) {
         if (bodyPatterns != null && !bodyPatterns.isEmpty() && request.getBody() != null) {
             return MatchResult.aggregate(
-                from(bodyPatterns).transform(new Function<ContentPattern, MatchResult>() {
-                    @Override
-                    public MatchResult apply(ContentPattern pattern) {
-                        if (StringValuePattern.class.isAssignableFrom(pattern.getClass())) {
-                            String body = StringUtils.isEmpty(request.getBodyAsString()) ?
-                                    null :
-                                    request.getBodyAsString();
-                            return pattern.match(body);
-                        }
-
-                        return pattern.match(request.getBody());
+                from(bodyPatterns).transform((Function<ContentPattern, MatchResult>) pattern -> {
+                    if (StringValuePattern.class.isAssignableFrom(pattern.getClass())) {
+                        String body = StringUtils.isEmpty(request.getBodyAsString()) ?
+                                null :
+                                request.getBodyAsString();
+                        return pattern.match(body);
                     }
 
-
+                    return pattern.match(request.getBody());
                 }).toList()
             );
         }
@@ -328,11 +303,7 @@ public class RequestPattern implements NamedValueMatcher<Request> {
             }
             return MatchResult.aggregate(
                     from(multipartPatterns)
-                            .transform(new Function<MultipartValuePattern, MatchResult>() {
-                                public MatchResult apply(MultipartValuePattern pattern) {
-                                    return pattern.match(request);
-                                }
-                            }).toList()
+                            .transform(pattern -> pattern.match(request)).toList()
             );
         }
 
@@ -471,20 +442,10 @@ public class RequestPattern implements NamedValueMatcher<Request> {
     }
 
     public static Predicate<Request> thatMatch(final RequestPattern pattern) {
-        return new Predicate<Request>() {
-            @Override
-            public boolean apply(Request request) {
-                return pattern.match(request).isExactMatch();
-            }
-        };
+        return request -> pattern.match(request).isExactMatch();
     }
 
     public static Predicate<ServeEvent> withRequstMatching(final RequestPattern pattern) {
-        return new Predicate<ServeEvent>() {
-            @Override
-            public boolean apply(ServeEvent serveEvent) {
-                return pattern.match(serveEvent.getRequest()).isExactMatch();
-            }
-        };
+        return serveEvent -> pattern.match(serveEvent.getRequest()).isExactMatch();
     }
 }

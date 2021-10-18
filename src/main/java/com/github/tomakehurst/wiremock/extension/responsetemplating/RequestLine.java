@@ -99,10 +99,5 @@ public class RequestLine {
         return (scheme.equals("http") && port == 80) || (scheme.equals("https") && port == 443);
     }
 
-    private static final Function<MultiValue, ListOrSingle<String>> TO_TEMPLATE_MODEL = new Function<MultiValue, ListOrSingle<String>>() {
-        @Override
-        public ListOrSingle<String> apply(MultiValue input) {
-            return ListOrSingle.of(input.values());
-        }
-    };
+    private static final Function<MultiValue, ListOrSingle<String>> TO_TEMPLATE_MODEL = input -> ListOrSingle.of(input.values());
 }

@@ -66,12 +66,7 @@ public class InMemoryRequestJournal implements RequestJournal {
 
 	@Override
 	public void removeEvent(final UUID eventId) {
-		removeServeEvents(new Predicate<ServeEvent>() {
-			@Override
-			public boolean apply(ServeEvent input) {
-				return input.getId().equals(eventId);
-			}
-		});
+		removeServeEvents(input -> input.getId().equals(eventId));
 	}
 
 	@Override
@@ -103,12 +98,7 @@ public class InMemoryRequestJournal implements RequestJournal {
 
 	@Override
 	public Optional<ServeEvent> getServeEvent(final UUID id) {
-		return tryFind(serveEvents, new Predicate<ServeEvent>() {
-			@Override
-			public boolean apply(ServeEvent input) {
-				return input.getId().equals(id);
-			}
-		});
+		return tryFind(serveEvents, input -> input.getId().equals(id));
 	}
 
 	@Override
@@ -117,11 +107,7 @@ public class InMemoryRequestJournal implements RequestJournal {
 	}
 
 	private Iterable<LoggedRequest> getRequests() {
-		return transform(serveEvents, new Function<ServeEvent, LoggedRequest>() {
-			public LoggedRequest apply(ServeEvent input) {
-				return input.getRequest();
-			}
-		});
+		return transform(serveEvents, input -> input.getRequest());
 	}
 
 	private void removeOldEntries() {
@@ -133,18 +119,15 @@ public class InMemoryRequestJournal implements RequestJournal {
 	}
 
 	private static Predicate<ServeEvent> withStubMetadataMatching(final StringValuePattern metadataPattern) {
-		return new Predicate<ServeEvent>() {
-			@Override
-			public boolean apply(ServeEvent serveEvent) {
-				StubMapping stub = serveEvent.getStubMapping();
-				if (stub != null) {
-					String metadataJson = Json.write(stub.getMetadata());
-					return metadataPattern.match(metadataJson).isExactMatch();
-				}
+		return serveEvent -> {
+            StubMapping stub = serveEvent.getStubMapping();
+            if (stub != null) {
+                String metadataJson = Json.write(stub.getMetadata());
+                return metadataPattern.match(metadataJson).isExactMatch();
+            }
 
-				return false;
-			}
-		};
+            return false;
+        };
 	}
 
 }

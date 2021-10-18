@@ -193,12 +193,7 @@ public class InMemoryStubMappings implements StubMappings {
 
 	@Override
 	public Optional<StubMapping> get(final UUID id) {
-		return tryFind(mappings, new Predicate<StubMapping>() {
-			@Override
-			public boolean apply(StubMapping input) {
-				return input.getUuid().equals(id);
-			}
-		});
+		return tryFind(mappings, input -> input.getUuid().equals(id));
 	}
 
 	@Override
@@ -208,12 +203,9 @@ public class InMemoryStubMappings implements StubMappings {
 
 	@Override
 	public List<StubMapping> findByMetadata(final StringValuePattern pattern) {
-        return from(mappings).filter(new Predicate<StubMapping>() {
-            @Override
-            public boolean apply(StubMapping stub) {
-                String metadataJson = Json.write(stub.getMetadata());
-                return pattern.match(metadataJson).isExactMatch();
-            }
+        return from(mappings).filter(stub -> {
+            String metadataJson = Json.write(stub.getMetadata());
+            return pattern.match(metadataJson).isExactMatch();
         }).toList();
 	}
 
@@ -222,20 +214,11 @@ public class InMemoryStubMappings implements StubMappings {
     }
 
     private Predicate<StubMapping> mappingMatchingAndInCorrectScenarioStateNew(final Request request) {
-		return new Predicate<StubMapping>() {
-			public boolean apply(StubMapping mapping) {
-				return mapping.getRequest().match(request, customMatchers).isExactMatch() &&
-				(mapping.isIndependentOfScenarioState() || scenarios.mappingMatchesScenarioState(mapping));
-			}
-		};
+		return mapping -> mapping.getRequest().match(request, customMatchers).isExactMatch() &&
+        (mapping.isIndependentOfScenarioState() || scenarios.mappingMatchesScenarioState(mapping));
 	}
 
 	private Predicate<StubMapping> mappingMatchingUuid(final UUID uuid) {
-		return new Predicate<StubMapping>() {
-			@Override
-			public boolean apply(StubMapping input) {
-				return input.getUuid().equals(uuid);
-			}
-		};
+		return input -> input.getUuid().equals(uuid);
 	}
 }

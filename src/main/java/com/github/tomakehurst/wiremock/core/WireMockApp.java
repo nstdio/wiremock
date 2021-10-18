@@ -172,23 +172,13 @@ public class WireMockApp implements StubServer, Admin {
 
     private List<RequestFilter> getAdminRequestFilters() {
         return FluentIterable.from(options.extensionsOfType(RequestFilter.class).values())
-                .filter(new Predicate<RequestFilter>() {
-                    @Override
-                    public boolean apply(RequestFilter filter) {
-                        return filter.applyToAdmin();
-                    }
-                })
+                .filter(filter -> filter.applyToAdmin())
                 .toList();
     }
 
     private List<RequestFilter> getStubRequestFilters() {
         return FluentIterable.from(options.extensionsOfType(RequestFilter.class).values())
-                .filter(new Predicate<RequestFilter>() {
-                    @Override
-                    public boolean apply(RequestFilter filter) {
-                        return filter.applyToStubs();
-                    }
-                })
+                .filter(filter -> filter.applyToStubs())
                 .toList();
     }
 
@@ -368,12 +358,7 @@ public class WireMockApp implements StubServer, Admin {
         ImmutableList.Builder<NearMiss> listBuilder = ImmutableList.builder();
         Iterable<ServeEvent> unmatchedServeEvents =
             from(requestJournal.getAllServeEvents())
-                .filter(new Predicate<ServeEvent>() {
-                    @Override
-                    public boolean apply(ServeEvent input) {
-                        return input.isNoExactMatch();
-                    }
-                });
+                .filter(input -> input.isNoExactMatch());
 
         for (ServeEvent serveEvent : unmatchedServeEvents) {
             listBuilder.addAll(nearMissCalculator.findNearestTo(serveEvent.getRequest()));
@@ -501,12 +486,7 @@ public class WireMockApp implements StubServer, Admin {
         }
 
         if (importOptions.getDeleteAllNotInImport()) {
-            Iterable<UUID> ids = transform(mappings, new Function<StubMapping, UUID>() {
-                @Override
-                public UUID apply(StubMapping input) {
-                    return input.getId();
-                }
-            });
+            Iterable<UUID> ids = transform(mappings, input -> input.getId());
             for (StubMapping mapping: listAllStubMappings().getMappings()) {
                 if (!contains(ids, mapping.getId())) {
                     removeStubMapping(mapping);

@@ -257,21 +257,11 @@ public class PostServeActionExtensionTest {
     }
 
     private Callable<Integer> getValue(final AtomicInteger value) {
-        return new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return value.get();
-            }
-        };
+        return () -> value.get();
     }
 
     private Callable<String> getContent(final String url) {
-        return new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return client.get(url).content();
-            }
-        };
+        return () -> client.get(url).content();
     }
 
     public static class NamedCounterAction extends PostServeAction implements AdminApiExtension {
@@ -285,16 +275,13 @@ public class PostServeActionExtensionTest {
 
         @Override
         public void contributeAdminApiRoutes(Router router) {
-            router.add(GET, "/named-counter/{name}", new AdminTask() {
-                @Override
-                public ResponseDefinition execute(Admin admin, Request request, PathParams pathParams) {
-                    String name = pathParams.get("name");
-                    Integer count = firstNonNull(counters.get(name), 0);
-                    return responseDefinition()
-                        .withStatus(200)
-                        .withBody(String.valueOf(count))
-                        .build();
-                }
+            router.add(GET, "/named-counter/{name}", (admin, request, pathParams) -> {
+                String name = pathParams.get("name");
+                Integer count = firstNonNull(counters.get(name), 0);
+                return responseDefinition()
+                    .withStatus(200)
+                    .withBody(String.valueOf(count))
+                    .build();
             });
         }
 

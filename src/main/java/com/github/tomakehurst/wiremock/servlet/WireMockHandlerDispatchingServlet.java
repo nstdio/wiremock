@@ -172,14 +172,11 @@ public class WireMockHandlerDispatchingServlet extends HttpServlet {
 
         private void respondAsync(final Request request, final Response response) {
             final AsyncContext asyncContext = httpServletRequest.startAsync();
-            scheduledExecutorService.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        respondTo(request, response);
-                    } finally {
-                        asyncContext.complete();
-                    }
+            scheduledExecutorService.schedule(() -> {
+                try {
+                    respondTo(request, response);
+                } finally {
+                    asyncContext.complete();
                 }
             }, response.getInitialDelay(), MILLISECONDS);
         }

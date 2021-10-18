@@ -546,11 +546,7 @@ public class StubMappingJsonRecorderTest {
     }
 
     private IdGenerator fixedIdGenerator(final String id) {
-        return new IdGenerator() {
-            public String generate() {
-                return id;
-            }
-        };
+        return () -> id;
     }
 
     private static Request.Part createPart(final String name, final byte[] data, final String contentType, final String fileName, String... extraHeaderLines) {

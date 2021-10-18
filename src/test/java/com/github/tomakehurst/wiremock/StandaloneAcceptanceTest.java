@@ -468,12 +468,7 @@ public class StandaloneAcceptanceTest {
 	}
 
 	private FilenameFilter namedLike(final String namePart) {
-	    return new FilenameFilter() {
-            @Override
-			public boolean accept(File file, String name) {
-                return name.contains(namePart);
-            }
-        };
+	    return (file, name) -> name.contains(namePart);
 	}
 
 	private WireMock startOtherServerAndClient() {
@@ -627,12 +622,7 @@ public class StandaloneAcceptanceTest {
     }
 
     private static Predicate<String> contains(final String part) {
-	    return new Predicate<String>() {
-            @Override
-            public boolean apply(String s) {
-                return s.contains(part);
-            }
-        };
+	    return s -> s.contains(part);
     }
 
     /**

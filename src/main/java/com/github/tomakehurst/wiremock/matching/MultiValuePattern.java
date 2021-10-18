@@ -68,17 +68,9 @@ public class MultiValuePattern implements NamedValueMatcher<MultiValue> {
     }
 
     private static MatchResult getBestMatch(final StringValuePattern valuePattern, List<String> values) {
-        List<MatchResult> allResults = Lists.transform(values, new Function<String, MatchResult>() {
-            public MatchResult apply(String input) {
-                return valuePattern.match(input);
-            }
-        });
+        List<MatchResult> allResults = Lists.transform(values, input -> valuePattern.match(input));
 
-        return min(allResults, new Comparator<MatchResult>() {
-            public int compare(MatchResult o1, MatchResult o2) {
-                return new Double(o1.getDistance()).compareTo(o2.getDistance());
-            }
-        });
+        return min(allResults, (o1, o2) -> new Double(o1.getDistance()).compareTo(o2.getDistance()));
     }
 
     @Override

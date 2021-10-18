@@ -289,12 +289,7 @@ public class ResponseTemplateTransformerTest {
 
     @Test
     public void customHelper() {
-        Helper<String> helper = new Helper<String>() {
-            @Override
-            public Object apply(String context, Options options) throws IOException {
-                return context.length();
-            }
-        };
+        Helper<String> helper = (context, options) -> context.length();
 
         transformer = ResponseTemplateTransformer.builder()
                 .global(false)

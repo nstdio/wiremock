@@ -212,12 +212,7 @@ public class NotMatchedPageAcceptanceTest {
             @Override
             public RequestFilterAction filter(Request request) {
                 Request wrappedRequest = RequestWrapper.create()
-                        .transformHeader("X-My-Header", new FieldTransformer<List<String>>() {
-                            @Override
-                            public List<String> transform(List<String> source) {
-                                return singletonList("modified value");
-                            }
-                        })
+                        .transformHeader("X-My-Header", source -> singletonList("modified value"))
                         .wrap(request);
                 return RequestFilterAction.continueWith(wrappedRequest);
             }
