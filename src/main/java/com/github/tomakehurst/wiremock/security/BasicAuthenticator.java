@@ -17,13 +17,13 @@ package com.github.tomakehurst.wiremock.security;
 
 import com.github.tomakehurst.wiremock.client.BasicCredentials;
 import com.github.tomakehurst.wiremock.http.Request;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 public class BasicAuthenticator implements Authenticator {
 
@@ -43,12 +43,7 @@ public class BasicAuthenticator implements Authenticator {
 
     @Override
     public boolean authenticate(Request request) {
-        List<String> headerValues = FluentIterable.from(credentials).transform(new Function<BasicCredentials, String>() {
-            @Override
-            public String apply(BasicCredentials input) {
-                return input.asAuthorizationHeaderValue();
-            }
-        }).toList();
+        List<String> headerValues = credentials.stream().map(BasicCredentials::asAuthorizationHeaderValue).collect(toList());
         return request.containsHeader(AUTHORIZATION) &&
                headerValues.contains(request.header(AUTHORIZATION).firstValue());
     }

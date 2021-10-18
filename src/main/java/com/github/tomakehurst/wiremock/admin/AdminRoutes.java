@@ -19,8 +19,6 @@ import com.github.tomakehurst.wiremock.admin.tasks.*;
 import com.github.tomakehurst.wiremock.extension.AdminApiExtension;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.verification.notmatched.PlainTextStubNotMatchedRenderer;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableBiMap;
 
 import java.util.Collections;
@@ -29,7 +27,6 @@ import java.util.Map;
 import static com.github.tomakehurst.wiremock.admin.RequestSpec.requestSpec;
 import static com.github.tomakehurst.wiremock.common.Exceptions.throwUnchecked;
 import static com.github.tomakehurst.wiremock.http.RequestMethod.*;
-import static com.google.common.collect.Iterables.tryFind;
 
 public class AdminRoutes {
 
@@ -122,37 +119,19 @@ public class AdminRoutes {
     }
 
     public AdminTask taskFor(final RequestMethod method, final String path) {
-        return tryFind(routes.entrySet(), new Predicate<Map.Entry<RequestSpec, AdminTask>>() {
-            @Override
-            public boolean apply(Map.Entry<RequestSpec, AdminTask> entry) {
-                return entry.getKey().matches(method, path);
-            }
-        }).transform(new Function<Map.Entry<RequestSpec, AdminTask>, AdminTask>() {
-            @Override
-            public AdminTask apply(Map.Entry<RequestSpec, AdminTask> input) {
-                return input.getValue();
-            }
-        }).or(new NotFoundAdminTask());
+        return routes.entrySet().stream()
+                .filter(entry -> entry.getKey().matches(method, path))
+                .findFirst()
+                .map(Map.Entry::getValue)
+                .orElseGet(NotFoundAdminTask::new);
     }
 
     public RequestSpec requestSpecForTask(final Class<? extends AdminTask> taskClass) {
-        RequestSpec requestSpec = tryFind(routes.entrySet(), new Predicate<Map.Entry<RequestSpec, AdminTask>>() {
-            @Override
-            public boolean apply(Map.Entry<RequestSpec, AdminTask> input) {
-                return input.getValue().getClass().equals(taskClass);
-            }
-        }).transform(new Function<Map.Entry<RequestSpec,AdminTask>, RequestSpec>() {
-            @Override
-            public RequestSpec apply(Map.Entry<RequestSpec, AdminTask> input) {
-                return input.getKey();
-            }
-        }).orNull();
-
-        if (requestSpec == null) {
-            throw new NotFoundException("No route could be found for " + taskClass.getSimpleName());
-        }
-
-        return requestSpec;
+        return routes.entrySet().stream()
+                .filter(entry -> entry.getValue().getClass().equals(taskClass))
+                .findFirst()
+                .map(Map.Entry::getKey)
+                .orElseThrow(() -> new NotFoundException("No route could be found for " + taskClass.getSimpleName()));
     }
 
     protected static class RouteBuilder implements Router {

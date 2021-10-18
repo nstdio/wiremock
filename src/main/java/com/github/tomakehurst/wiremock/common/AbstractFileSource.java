@@ -16,19 +16,17 @@
 package com.github.tomakehurst.wiremock.common;
 
 import com.github.tomakehurst.wiremock.security.NotAuthorisedException;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.io.Files;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Lists.newArrayList;
+import static java.util.stream.Collectors.toList;
 
 public abstract class AbstractFileSource implements FileSource {
 
@@ -75,7 +73,7 @@ public abstract class AbstractFileSource implements FileSource {
     @Override
     public List<TextFile> listFilesRecursively() {
     	assertExistsAndIsDirectory();
-    	List<File> fileList = newArrayList();
+    	List<File> fileList = new ArrayList<>();
     	recursivelyAddFilesToList(rootDirectory, fileList);
     	return toTextFileList(fileList);
     }
@@ -92,11 +90,7 @@ public abstract class AbstractFileSource implements FileSource {
     }
 
     private List<TextFile> toTextFileList(List<File> fileList) {
-    	return newArrayList(transform(fileList, new Function<File, TextFile>() {
-    		public TextFile apply(File input) {
-    			return new TextFile(input.toURI());
-    		}
-    	}));
+    	return fileList.stream().map(input -> new TextFile(input.toURI())).collect(toList());
     }
 
     @Override
@@ -182,11 +176,7 @@ public abstract class AbstractFileSource implements FileSource {
     }
 
     public static Predicate<BinaryFile> byFileExtension(final String extension) {
-        return new Predicate<BinaryFile>() {
-            public boolean apply(BinaryFile input) {
-                return input.name().endsWith("." + extension);
-            }
-        };
+        return input -> input.name().endsWith("." + extension);
     }
 
 }

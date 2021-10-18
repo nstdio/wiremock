@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.testsupport.WireMockTestClient;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,7 +29,6 @@ import java.util.concurrent.Future;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.github.tomakehurst.wiremock.testsupport.TestFiles.defaultTestFilesRoot;
-import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -53,17 +53,14 @@ public class ConcurrentProxyingTest {
 
         ExecutorService executor = Executors.newFixedThreadPool(20);
 
-        List<Future<?>> results = newArrayList();
+        List<Future<?>> results = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
-            results.add(executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    assertThat(client.get("/plain-example1.txt").content(), is("Example 1"));
-                    assertThat(client.get("/plain-example2.txt").content(), is("Example 2"));
-                    assertThat(client.get("/plain-example3.txt").content(), is("Example 3"));
-                    assertThat(client.get("/plain-example4.txt").content(), is("Example 4"));
-                    assertThat(client.get("/plain-example5.txt").content(), is("Example 5"));
-                }
+            results.add(executor.submit(() -> {
+                assertThat(client.get("/plain-example1.txt").content(), is("Example 1"));
+                assertThat(client.get("/plain-example2.txt").content(), is("Example 2"));
+                assertThat(client.get("/plain-example3.txt").content(), is("Example 3"));
+                assertThat(client.get("/plain-example4.txt").content(), is("Example 4"));
+                assertThat(client.get("/plain-example5.txt").content(), is("Example 5"));
             }));
         }
 

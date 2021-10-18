@@ -651,12 +651,7 @@ public class Examples extends AcceptanceTestBase {
         @Override
         public RequestFilterAction filter(Request request) {
             Request wrappedRequest = RequestWrapper.create()
-                    .transformAbsoluteUrl(new FieldTransformer<String>() {
-                        @Override
-                        public String transform(String url) {
-                            return url + "extraparam=123";
-                        }
-                    })
+                    .transformAbsoluteUrl(url -> url + "extraparam=123")
                     .addHeader("X-Custom-Header", "headerval")
                     .wrap(request);
 

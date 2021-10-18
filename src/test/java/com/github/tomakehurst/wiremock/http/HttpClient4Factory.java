@@ -66,12 +66,7 @@ public class HttpClient4Factory {
     public static final int DEFAULT_MAX_CONNECTIONS = 50;
     public static final int DEFAULT_TIMEOUT = 30000;
 
-    private static final ConnectionKeepAliveStrategy NO_KEEP_ALIVE = new ConnectionKeepAliveStrategy() {
-        @Override
-        public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
-            return 0;
-        }
-    };
+    private static final ConnectionKeepAliveStrategy NO_KEEP_ALIVE = (response, context) -> 0;
 
     public static CloseableHttpClient createClient(
             int maxConnections,

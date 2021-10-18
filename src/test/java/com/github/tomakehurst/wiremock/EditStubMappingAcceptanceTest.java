@@ -16,15 +16,16 @@
 package com.github.tomakehurst.wiremock;
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
-import com.google.common.base.Predicate;
 import org.junit.Test;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.google.common.collect.FluentIterable.from;
-import static org.hamcrest.Matchers.is;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 public class EditStubMappingAcceptanceTest extends AcceptanceTestBase {
 
@@ -46,20 +47,17 @@ public class EditStubMappingAcceptanceTest extends AcceptanceTestBase {
 
         assertThat(testClient.get("/edit-this").content(), is("Modified"));
 
-        int editThisStubCount =
-            from(wireMockServer.listAllStubMappings().getMappings())
-            .filter(withUrl("/edit-this"))
-            .size();
+        long editThisStubCount = wireMockServer.listAllStubMappings()
+                .getMappings()
+                .stream()
+                .filter(withUrl("/edit-this"))
+                .count();
 
-        assertThat(editThisStubCount, is(1));
+        assertThat(editThisStubCount, is(1L));
     }
 
     private Predicate<StubMapping> withUrl(final String url) {
-        return new Predicate<StubMapping>() {
-            public boolean apply(StubMapping mapping) {
-                return (mapping.getRequest().getUrl() != null && mapping.getRequest().getUrl().equals(url));
-            }
-        };
+        return mapping -> (mapping.getRequest().getUrl() != null && mapping.getRequest().getUrl().equals(url));
     }
 
 

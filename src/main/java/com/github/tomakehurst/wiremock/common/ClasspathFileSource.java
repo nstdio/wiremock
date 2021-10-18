@@ -15,9 +15,6 @@
  */
 package com.github.tomakehurst.wiremock.common;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterators;
 import com.google.common.io.Resources;
 
@@ -26,8 +23,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -37,6 +35,7 @@ import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Thread.currentThread;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 public class ClasspathFileSource implements FileSource {
 
@@ -142,15 +141,10 @@ public class ClasspathFileSource implements FileSource {
             return toTextFileList(fileList);
         }
 
-        return FluentIterable.from(toIterable(zipFile.entries())).filter(new Predicate<ZipEntry>() {
-            public boolean apply(ZipEntry jarEntry) {
-                return !jarEntry.isDirectory() && jarEntry.getName().startsWith(path);
-            }
-        }).transform(new Function<ZipEntry, TextFile>() {
-            public TextFile apply(ZipEntry jarEntry) {
-                return new TextFile(getUriFor(jarEntry));
-            }
-        }).toList();
+        return toStream(zipFile.entries())
+                .filter(jarEntry -> !jarEntry.isDirectory() && jarEntry.getName().startsWith(path))
+                .map(jarEntry -> new TextFile(getUriFor(jarEntry)))
+                .collect(toList());
     }
 
     private URI getUriFor(ZipEntry jarEntry) {
@@ -173,11 +167,7 @@ public class ClasspathFileSource implements FileSource {
     }
 
     private List<TextFile> toTextFileList(List<File> fileList) {
-        return newArrayList(transform(fileList, new Function<File, TextFile>() {
-            public TextFile apply(File input) {
-                return new TextFile(input.toURI());
-            }
-        }));
+        return fileList.stream().map(File::toURI).map(TextFile::new).collect(toList());
     }
 
     @Override
@@ -198,13 +188,9 @@ public class ClasspathFileSource implements FileSource {
     public void deleteFile(String name) {
     }
 
-    private static <T> Iterable<T> toIterable(final Enumeration<T> e) {
-        return new Iterable<T>() {
-            @Override
-            public Iterator<T> iterator() {
-                return Iterators.forEnumeration(e);
-            }
-        };
+    private static <T> Stream<T> toStream(final Enumeration<T> e) {
+        Iterable<T> it = () -> Iterators.forEnumeration(e);
+        return StreamSupport.stream(it.spliterator(), false);
     }
 
     private void assertExistsAndIsDirectory() {

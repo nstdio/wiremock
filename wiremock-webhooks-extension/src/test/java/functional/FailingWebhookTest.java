@@ -54,12 +54,9 @@ public class FailingWebhookTest {
 
   @Before
   public void init() {
-    targetServer.addMockServiceRequestListener(new RequestListener() {
-      @Override
-      public void requestReceived(Request request, Response response) {
-        if (request.getUrl().startsWith("/callback")) {
-          latch.countDown();
-        }
+    targetServer.addMockServiceRequestListener((request, response) -> {
+      if (request.getUrl().startsWith("/callback")) {
+        latch.countDown();
       }
     });
     reset();

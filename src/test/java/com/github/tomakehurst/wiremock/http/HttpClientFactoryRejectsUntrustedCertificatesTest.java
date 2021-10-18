@@ -53,12 +53,7 @@ public class HttpClientFactoryRejectsUntrustedCertificatesTest extends HttpClien
 
         server.stubFor(get("/whatever").willReturn(aResponse().withBody("Hello World")));
 
-        assertThrows(SSLException.class, new ThrowingRunnable() {
-            @Override
-            public void run() throws Exception {
-                client.execute(new HttpGet(server.url("/whatever")));
-            }
-        });
+        assertThrows(SSLException.class, () -> client.execute(new HttpGet(server.url("/whatever"))));
     }
 
     public HttpClientFactoryRejectsUntrustedCertificatesTest(

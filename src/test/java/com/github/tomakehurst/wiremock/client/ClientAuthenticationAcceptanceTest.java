@@ -49,17 +49,7 @@ public class ClientAuthenticationAcceptanceTest {
 
     @Test
     public void supportsCustomAuthenticator() {
-        initialise(new Authenticator() {
-            @Override
-            public boolean authenticate(Request request) {
-                return request.containsHeader("X-Magic-Header");
-            }
-        }, new ClientAuthenticator() {
-            @Override
-            public List<HttpHeader> generateAuthHeaders() {
-                return singletonList(httpHeader("X-Magic-Header", "blah"));
-            }
-        });
+        initialise(request -> request.containsHeader("X-Magic-Header"), () -> singletonList(httpHeader("X-Magic-Header", "blah")));
 
         WireMockTestClient noAuthClient = new WireMockTestClient(server.port());
 

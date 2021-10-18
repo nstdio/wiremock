@@ -158,14 +158,11 @@ public class EqualToXmlPattern extends StringValuePattern {
                             .ignoreWhitespace()
                             .ignoreComments()
                             .withDifferenceEvaluator(diffEvaluator)
-                            .withComparisonListeners(new ComparisonListener() {
-                                @Override
-                                public void comparisonPerformed(Comparison comparison, ComparisonResult outcome) {
-                                    if (COUNTED_COMPARISONS.contains(comparison.getType()) && comparison.getControlDetails().getValue() != null) {
-                                        totalComparisons.incrementAndGet();
-                                        if (outcome == ComparisonResult.DIFFERENT) {
-                                            differences.incrementAndGet();
-                                        }
+                            .withComparisonListeners((comparison, outcome) -> {
+                                if (COUNTED_COMPARISONS.contains(comparison.getType()) && comparison.getControlDetails().getValue() != null) {
+                                    totalComparisons.incrementAndGet();
+                                    if (outcome == ComparisonResult.DIFFERENT) {
+                                        differences.incrementAndGet();
                                     }
                                 }
                             })
@@ -230,11 +227,6 @@ public class EqualToXmlPattern extends StringValuePattern {
             return FluentIterable.from(nodes).toSortedList(COMPARATOR);
         }
 
-        private static final Comparator<Node> COMPARATOR = new Comparator<Node>() {
-            @Override
-            public int compare(Node node1, Node node2) {
-                return node1.getLocalName().compareTo(node2.getLocalName());
-            }
-        };
+        private static final Comparator<Node> COMPARATOR = (node1, node2) -> node1.getLocalName().compareTo(node2.getLocalName());
     }
 }
